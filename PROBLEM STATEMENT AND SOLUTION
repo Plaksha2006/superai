@@ -1,0 +1,8 @@
+PROBLEM STATEMNET
+“Students often receive educational reports with limited actionable feedback, making it difficult for them to understand their strengths, weaknesses, and areas for improvement. These reports are typically generic and do not provide personalized insights or recommendations tailored to individual learning progress and challenges.”
+SOLUTION
+Develop an AI-powered NLP model that analyzes student performance data (such as grades, teacher comments, and subject-wise assessments) to automatically generate personalized, constructive, and improvement-oriented educational reports. The model will:
+Summarize performance across subjects using natural language.
+Identify strengths and weaknesses by analyzing trends in grades and feedback.
+Generate personalized recommendations for improvement based on detected learning patterns.
+Suggest learning resources using a recommendation system (optional extension).
