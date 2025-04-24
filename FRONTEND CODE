@@ -1,0 +1,76 @@
+import streamlit as st
+from transformers import T5ForConditionalGeneration, T5Tokenizer
+import torch
+
+# Load the pre-trained model and tokenizer
+model_name = "t5-small"
+tokenizer = T5Tokenizer.from_pretrained(model_name)
+model = T5ForConditionalGeneration.from_pretrained(model_name)
+
+# Function to generate feedback and suggestions based on grades
+def generate_feedback_and_suggestions(marks):
+    feedback = {}
+    suggestions = {}
+
+    for subject, grade in marks.items():
+        if grade >= 85:
+            feedback[subject] = "Excellent performance."
+            suggestions[subject] = "Keep up the great work!"
+        elif 70 <= grade < 85:
+            feedback[subject] = "Good performance, but there's room for improvement."
+            suggestions[subject] = "Review the key concepts and practice more exercises."
+        elif 50 <= grade < 70:
+            feedback[subject] = "Needs improvement."
+            suggestions[subject] = "Focus on understanding the core concepts and seek help if needed."
+        else:
+            feedback[subject] = "Poor performance."
+            suggestions[subject] = "Consider extra study sessions and consult with the teacher for guidance."
+
+    return feedback, suggestions
+
+# Frontend Code using Streamlit
+def main():
+    st.title("AI-Based Educational Report Generator")
+
+    st.write("""
+    This app will generate an educational report based on student marks and provide personalized feedback and suggestions.
+    """)
+
+    # Collect user input for marks
+    st.header("Enter Student Marks")
+    subjects = ["Math", "English", "Science", "History"]
+    marks = {}
+
+    for subject in subjects:
+        marks[subject] = st.number_input(f"Enter grade for {subject}", min_value=0, max_value=100, step=1)
+
+    if st.button("Generate Report"):
+        feedback, suggestions = generate_feedback_and_suggestions(marks)  # Generate feedback and suggestions
+        
+        # Display feedback and suggestions for each subject
+        st.subheader("AI-Generated Educational Report:")
+        for subject in subjects:
+            st.write(f"**{subject}:** Grade: {marks[subject]}, Feedback: {feedback[subject]}, Suggestion: {suggestions[subject]}")
+
+        # Optionally, generate an advanced report using the model
+        input_text = create_prompt(marks, feedback, suggestions)
+        report = generate_report(input_text)
+        st.write("\n--- Advanced AI Summary: ---")
+        st.write(report)
+
+# Function to create text prompt for the AI
+def create_prompt(marks, feedback, suggestions):
+    prompt = "Generate a report for the student based on the marks and feedback: "
+    for subject, grade in marks.items():
+        prompt += f"{subject} - Grade: {grade}, Feedback: {feedback[subject]}, Suggestion: {suggestions[subject]}. "
+    return prompt.strip()
+
+# Function to generate AI summary
+def generate_report(text):
+    input_ids = tokenizer.encode("summarize: " + text, return_tensors="pt", max_length=512, truncation=True)
+    output_ids = model.generate(input_ids, max_length=150, num_beams=4, early_stopping=True)
+    return tokenizer.decode(output_ids[0], skip_special_tokens=True)
+
+# Run the Streamlit app
+if __name__ == "__main__":
+    main()
