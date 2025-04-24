@@ -1,0 +1,74 @@
+# Step 1: Install Transformers Library (if you haven't already)
+!pip install transformers -q
+
+# Step 2: Import Libraries
+from transformers import T5ForConditionalGeneration, T5Tokenizer
+import torch
+
+# Step 3: Load Pre-trained T5 Model
+model_name = "t5-small"
+tokenizer = T5Tokenizer.from_pretrained(model_name)
+model = T5ForConditionalGeneration.from_pretrained(model_name)
+
+# Step 4: Function to Take User Input for Marks Only
+def get_student_marks():
+    subjects = ["Math", "English", "Science", "History"]
+    marks = {}
+    
+    print("Please enter the student's marks for each subject.")
+    for subject in subjects:
+        grade = float(input(f"Enter the grade for {subject}: "))
+        marks[subject] = grade
+    
+    return marks
+
+# Step 5: Create Feedback and Suggestions Based on Marks
+def generate_feedback_and_suggestions(marks):
+    feedback = {}
+    suggestions = {}
+
+    for subject, grade in marks.items():
+        if grade >= 85:
+            feedback[subject] = "Excellent performance."
+            suggestions[subject] = "Keep up the great work!"
+        elif 70 <= grade < 85:
+            feedback[subject] = "Good performance, but there's room for improvement."
+            suggestions[subject] = "Review the key concepts and practice more exercises."
+        elif 50 <= grade < 70:
+            feedback[subject] = "Needs improvement."
+            suggestions[subject] = "Focus on understanding the core concepts and seek help if needed."
+        else:
+            feedback[subject] = "Poor performance."
+            suggestions[subject] = "Consider extra study sessions and consult with the teacher for guidance."
+
+    return feedback, suggestions
+
+# Step 6: Create Text Prompt for AI Model (Optional for advanced feedback generation)
+def create_prompt(marks, feedback, suggestions):
+    prompt = "Generate a report for the student based on the marks and feedback: "
+    for subject, grade in marks.items():
+        prompt += f"{subject} - Grade: {grade}, Feedback: {feedback[subject]}, Suggestion: {suggestions[subject]}. "
+    return prompt.strip()
+
+# Step 7: Generate Report using T5 Model (optional for advanced suggestions)
+def generate_report(text):
+    input_ids = tokenizer.encode("summarize: " + text, return_tensors="pt", max_length=512, truncation=True)
+    output_ids = model.generate(input_ids, max_length=150, num_beams=4, early_stopping=True)
+    return tokenizer.decode(output_ids[0], skip_special_tokens=True)
+
+# Step 8: Main Flow
+def main():
+    marks = get_student_marks()  # Take user input for marks
+    feedback, suggestions = generate_feedback_and_suggestions(marks)  # Generate feedback and suggestions
+    input_text = create_prompt(marks, feedback, suggestions)  # Optional: create prompt for AI model
+    report = generate_report(input_text)  # Generate the report using the model (optional)
+    
+    print("\n📄 AI-Generated Educational Report:\n")
+    for subject in marks:
+        print(f"{subject}: Grade: {marks[subject]}, Feedback: {feedback[subject]}, Suggestion: {suggestions[subject]}")
+    
+    print("\n--- Advanced AI Summary: ---")
+    print(report)  # Print the AI summary
+
+# Run the program
+main()
